@@ -11,6 +11,10 @@ CSV_COLUMN_TITLES = [
   'Longitude'
 ]
 
+DEFAULT_IMAGE_DIR = [
+  './gps_images'
+]
+
 rescue LoadError
   STDERR.puts "In development, you need to use `bundle exec bin/kitten_plot` to run your app"
   STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
@@ -80,7 +84,13 @@ end
 # end
 #
 pre do |global,command,options,args|
-  path_to_image_files = './gps_images'
+  # puts("global #{global}")
+  # puts("command #{command}")
+  # puts("options #{options}")
+  # puts("args #{args}")
+
+  path_to_image_files = args.present? ? args[0] : DEFAULT_IMAGE_DIR
+
   timestamp = Time.now.strftime('%Y%jT%H%MZ')
 
   @image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
