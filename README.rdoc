@@ -1,0 +1,6 @@
+= kitten_plot
+
+Describe your project here
+
+:include:kitten_plot.rdoc
+

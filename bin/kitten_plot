@@ -1,0 +1,134 @@
+#!/usr/bin/env ruby
+require 'gli'
+begin # XXX: Remove this begin/rescue before distributing your app
+require 'kitten_plot'
+require 'csv'
+require 'exifr/jpeg'
+require 'pry'
+
+CSV_COLUMN_TITLES = [
+  'Latitude',
+  'Longitude'
+]
+
+rescue LoadError
+  STDERR.puts "In development, you need to use `bundle exec bin/kitten_plot` to run your app"
+  STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
+  STDERR.puts "Feel free to remove this message from bin/kitten_plot now"
+  exit 64
+end
+
+include GLI::App
+
+program_desc 'Outputs location coordinates for the images provided'
+
+version KittenPlot::VERSION
+
+subcommand_option_handling :normal
+arguments :strict
+
+desc 'Describe some switch here'
+switch [:s,:switch]
+
+desc 'Describe some flag here'
+default_value 'the default'
+arg_name 'The name of the argument'
+flag [:f,:flagname]
+
+desc 'Describe get_coordinates here'
+arg_name 'Describe arguments to get_coordinates here'
+
+
+command :get_coordinates do |c|
+  c.desc 'Describe a switch to get_coordinates'
+  c.switch :s
+
+  c.desc 'Describe a flag to get_coordinates'
+  c.default_value 'default'
+  c.flag :f
+
+  c.action do |global_options,options,args|
+    path_to_image_files = './gps_images'
+
+    image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
+
+    # puts image_files
+    #
+    # image_files.each do |image_file|
+    #   puts(EXIFR::JPEG.new(image_file)&.gps&.latitude && EXIFR::JPEG.new(image_file)&.gps&.longitude)
+    # end
+
+
+    # puts(EXIFR::JPEG.new(Dir.glob("#{path_to_image_files}/**/*").first).gps.latitude)
+
+
+    CSV.open('cat_burglery_targets.csv', 'wb' ) do |csv|
+      image_files.each do |image_file|
+        csv << CSV_COLUMN_TITLES
+        csv << [EXIFR::JPEG.new(image_file)&.gps&.latitude, EXIFR::JPEG.new(image_file)&.gps&.longitude]
+      end
+    end
+
+    # CSV.open("file.csv", "wb") do |csv|
+    #   csv << ["animal", "count", "price"]
+    #   csv << ["fox", "1", "$90.00"]
+    # end
+
+
+
+    # Your command logic here
+
+    # If you have any errors, just raise them
+    # raise "that command made no sense"
+
+    puts "get_coordinates command ran"
+  end
+end
+
+# desc 'Describe add here'
+# arg_name 'Describe arguments to add here'
+# command :add do |c|
+#   c.action do |global_options,options,args|
+#     puts "add command ran"
+#   end
+# end
+#
+# desc 'Describe complete here'
+# arg_name 'Describe arguments to complete here'
+# command :complete do |c|
+#   c.action do |global_options,options,args|
+#     puts "complete command ran"
+#   end
+# end
+
+# around do |global_options,command,options,args,code|
+  # File.open(global_options[:gps_images]) do |file|
+  #   options[:file] = file
+  #   code.call
+  # end
+# end
+
+pre do |global,command,options,args|
+  # my_files = ARGV
+  # my_files.each{|f| putc'.'}
+  # Pre logic here
+  # Return true to proceed; false to abort and not call the
+  # chosen command
+  # Use skips_pre before a command to skip this block
+  # on that command only
+  true
+end
+
+post do |global,command,options,args|
+  # Post logic here
+  # Use skips_post before a command to skip this
+  # block on that command only
+end
+
+on_error do |exception|
+  # Error logic here
+  # return false to skip default error handling
+  true
+end
+
+exit run(ARGV)

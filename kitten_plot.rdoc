@@ -1,0 +1,5 @@
+= kitten_plot
+
+Generate this with
+    kitten_plot rdoc
+After you have described your command line interface
