@@ -52,21 +52,17 @@ command :get_coordinates do |c|
 
     image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
 
-    # puts image_files
-    #
-    # image_files.each do |image_file|
-    #   puts(EXIFR::JPEG.new(image_file)&.gps&.latitude && EXIFR::JPEG.new(image_file)&.gps&.longitude)
-    # end
+    timestamp = Time.now.getutc
 
+    CSV.open("cat_burglery_targets-#{timestamp}.csv", 'wb' ) do |csv|
+      csv << CSV_COLUMN_TITLES
 
-    # puts(EXIFR::JPEG.new(Dir.glob("#{path_to_image_files}/**/*").first).gps.latitude)
-
-
-    CSV.open('cat_burglery_targets.csv', 'wb' ) do |csv|
+binding.pry
       image_files.each do |image_file|
-        csv << CSV_COLUMN_TITLES
-        csv << [EXIFR::JPEG.new(image_file)&.gps&.latitude, EXIFR::JPEG.new(image_file)&.gps&.longitude]
+        binding.pry
+        csv << [EXIFR::JPEG.new(image_file).gps.latitude, EXIFR::JPEG.new(image_file).gps.longitude]
       end
+      csv
     end
 
     # CSV.open("file.csv", "wb") do |csv|
