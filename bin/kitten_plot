@@ -27,17 +27,8 @@ version KittenPlot::VERSION
 subcommand_option_handling :normal
 arguments :strict
 
-desc 'Describe some switch here'
-switch [:s,:switch]
-
-desc 'Describe some flag here'
-default_value 'the default'
-arg_name 'The name of the argument'
-flag [:f,:flagname]
-
-desc 'Describe get_coordinates here'
-arg_name 'Describe arguments to get_coordinates here'
-
+desc 'Get the coordinates of a kitten you want'
+arg_name 'Provide the path to your image directory'
 
 command :get_coordinates do |c|
   c.desc 'Describe a switch to get_coordinates'
@@ -48,47 +39,38 @@ command :get_coordinates do |c|
   c.flag :f
 
   c.action do |global_options,options,args|
-    path_to_image_files = './gps_images'
 
-    image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
-
-    timestamp = Time.now.getutc
-
-    CSV.open("cat_burglery_targets-#{timestamp}.csv", 'wb' ) do |csv|
+    plot_catnapping_csv = CSV.open(@csv_filename, 'wb' ) do |csv|
       csv << CSV_COLUMN_TITLES
 
-binding.pry
-      image_files.each do |image_file|
-        binding.pry
-        csv << [EXIFR::JPEG.new(image_file).gps.latitude, EXIFR::JPEG.new(image_file).gps.longitude]
+      @image_files.each do |image_file|
+        @image_file = image_file
+        csv << gps_coordinates
       end
-      csv
     end
-
-    # CSV.open("file.csv", "wb") do |csv|
-    #   csv << ["animal", "count", "price"]
-    #   csv << ["fox", "1", "$90.00"]
-    # end
-
-
-
-    # Your command logic here
-
-    # If you have any errors, just raise them
-    # raise "that command made no sense"
-
-    puts "get_coordinates command ran"
+    plot_catnapping_csv
   end
+  true
 end
 
-# desc 'Describe add here'
-# arg_name 'Describe arguments to add here'
-# command :add do |c|
-#   c.action do |global_options,options,args|
-#     puts "add command ran"
-#   end
-# end
-#
+private
+
+def gps_coordinates
+  [latitude, longitude]
+end
+
+def latitude
+  image_to_exif&.gps&.latitude
+end
+
+def longitude
+  image_to_exif&.gps&.latitude
+end
+
+def image_to_exif
+  EXIFR::JPEG.new(@image_file)
+end
+
 # desc 'Describe complete here'
 # arg_name 'Describe arguments to complete here'
 # command :complete do |c|
@@ -96,34 +78,23 @@ end
 #     puts "complete command ran"
 #   end
 # end
-
-# around do |global_options,command,options,args,code|
-  # File.open(global_options[:gps_images]) do |file|
-  #   options[:file] = file
-  #   code.call
-  # end
-# end
-
+#
 pre do |global,command,options,args|
-  # my_files = ARGV
-  # my_files.each{|f| putc'.'}
-  # Pre logic here
-  # Return true to proceed; false to abort and not call the
-  # chosen command
-  # Use skips_pre before a command to skip this block
-  # on that command only
+  path_to_image_files = './gps_images'
+  timestamp = Time.now.strftime('%Y%jT%H%MZ')
+
+  @image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
+  @csv_filename = "cat_burglery_targets_#{timestamp}"
   true
 end
 
 post do |global,command,options,args|
-  # Post logic here
-  # Use skips_post before a command to skip this
-  # block on that command only
+  puts "Successfully generated #{@csv_filename}"
+  true
 end
 
 on_error do |exception|
-  # Error logic here
-  # return false to skip default error handling
+  "An error has occurred"
   true
 end
 
