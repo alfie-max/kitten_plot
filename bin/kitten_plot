@@ -11,9 +11,7 @@ CSV_COLUMN_TITLES = [
   'Longitude'
 ]
 
-DEFAULT_IMAGE_DIR = [
-  './gps_images'
-]
+DEFAULT_IMAGE_DIR = './gps_images'
 
 rescue LoadError
   STDERR.puts "In development, you need to use `bundle exec bin/kitten_plot` to run your app"
@@ -34,6 +32,18 @@ arguments :strict
 desc 'Get the coordinates of a kitten you want'
 arg_name 'Provide the path to your image directory'
 
+#  -m, [--template=TEMPLATE]                              # Path to some application template (can be a filesystem path or URL)
+desc 'Describe some switch here'
+switch [:s,:switch]
+
+desc 'Describe some flag here'
+default_value 'the default'
+arg_name 'The name of the argument'
+flag [:f,:flagname]
+
+
+desc 'Gets latitude and longitude for each image and outputs to csv'
+arg_name 'Call with path to an image directory or call with nothing to use defaults'
 command :get_coordinates do |c|
   c.desc 'Describe a switch to get_coordinates'
   c.switch :s
@@ -43,21 +53,24 @@ command :get_coordinates do |c|
   c.flag :f
 
   c.action do |global_options,options,args|
-
-    plot_catnapping_csv = CSV.open(@csv_filename, 'wb' ) do |csv|
-      csv << CSV_COLUMN_TITLES
-
-      @image_files.each do |image_file|
-        @image_file = image_file
-        csv << gps_coordinates
-      end
-    end
-    plot_catnapping_csv
+    generate_csv_for_images
   end
-  true
 end
 
 private
+
+def generate_csv_for_images
+  CSV.open(@csv_filename, 'wb' ) do |csv|
+    csv << CSV_COLUMN_TITLES
+
+    @image_files.each do |image_file|
+      @image_file = image_file
+      test = file_is_valid?
+      binding.pry
+      csv << gps_coordinates
+    end
+  end
+end
 
 def gps_coordinates
   [latitude, longitude]
@@ -75,37 +88,32 @@ def image_to_exif
   EXIFR::JPEG.new(@image_file)
 end
 
-# desc 'Describe complete here'
-# arg_name 'Describe arguments to complete here'
-# command :complete do |c|
-#   c.action do |global_options,options,args|
-#     puts "complete command ran"
-#   end
-# end
-#
+def file_is_valid?
+  File.exist?(@image_file) && File.file? && File.extname == 'jpg'
+end
+
 pre do |global,command,options,args|
-  # puts("global #{global}")
-  # puts("command #{command}")
-  # puts("options #{options}")
-  # puts("args #{args}")
+  puts("global #{global}")
+  puts("command #{command}")
+  puts("options #{options}")
+  puts("args #{args}")
 
-  path_to_image_files = args.present? ? args[0] : DEFAULT_IMAGE_DIR
+  path_to_image_files = args.length > 0 ? args.first : DEFAULT_IMAGE_DIR
 
-  timestamp = Time.now.strftime('%Y%jT%H%MZ')
+  exit_now!('Must supply a directory') unless File.directory?(path_to_image_files)
+
+  timestamp = Time.now.strftime('%Y%j%d-%H:%M')
 
   @image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
-  @csv_filename = "cat_burglery_targets_#{timestamp}"
-  true
+  @csv_filename = "cat_burglery_targets_#{timestamp}.csv"
 end
 
 post do |global,command,options,args|
-  puts "Successfully generated #{@csv_filename}"
-  true
+  puts "Finished generating #{@csv_filename}"
 end
 
 on_error do |exception|
-  "An error has occurred"
-  true
+  puts("ERROR: #{exception}")
 end
 
 exit run(ARGV)
