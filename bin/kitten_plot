@@ -1,118 +1,20 @@
 #!/usr/bin/env ruby
 require 'gli'
-begin # XXX: Remove this begin/rescue before distributing your app
-require 'kitten_plot'
-require 'csv'
-require 'exifr/jpeg'
 require 'pry'
 
-CSV_COLUMN_TITLES = [
-  'Latitude',
-  'Longitude'
-]
+module KittenPlot
+  module CLI
+    include GLI::App
+    extend self
 
-DEFAULT_IMAGE_DIR = './gps_images'
+    program_desc 'Outputs location coordinates for the images provided'
+    subcommand_option_handling :normal
+    arguments :strict
 
-rescue LoadError
-  STDERR.puts "In development, you need to use `bundle exec bin/kitten_plot` to run your app"
-  STDERR.puts "At install-time, RubyGems will make sure lib, etc. are in the load path"
-  STDERR.puts "Feel free to remove this message from bin/kitten_plot now"
-  exit 64
-end
+    version KittenPlot::VERSION
 
-include GLI::App
+    require_relative '../lib/kitten_plot'
 
-program_desc 'Outputs location coordinates for the images provided'
-
-version KittenPlot::VERSION
-
-subcommand_option_handling :normal
-arguments :strict
-
-desc 'Get the coordinates of a kitten you want'
-arg_name 'Provide the path to your image directory'
-
-#  -m, [--template=TEMPLATE]                              # Path to some application template (can be a filesystem path or URL)
-
-desc 'Describe some flag here'
-default_value 'the default'
-arg_name 'The name of the argument'
-flag [:f,:flagname]
-
-
-desc 'Gets latitude and longitude for each image and outputs to csv'
-arg_name 'Call with path to an image directory or call with nothing to use defaults'
-command :get_coordinates do |c|
-  c.desc 'Describe a switch to get_coordinates'
-  c.switch :s
-
-  c.desc 'Describe a flag to get_coordinates'
-  c.default_value 'default'
-  c.flag :f
-
-  c.action do |global_options,options,args|
-    generate_csv_for_images
+    exit run(ARGV)
   end
 end
-
-private
-
-def generate_csv_for_images
-  CSV.open(@csv_filename, 'wb' ) do |csv|
-    csv << CSV_COLUMN_TITLES
-
-    @image_files.each do |image_file|
-      @image_file = image_file
-      exit_now!("#{image_file} is not a valid file") unless file_is_valid?
-      csv << gps_coordinates
-    end
-  end
-end
-
-def gps_coordinates
-  [latitude, longitude]
-end
-
-def latitude
-  image_to_exif&.gps&.latitude || nil
-end
-
-def longitude
-  image_to_exif&.gps&.latitude || nil
-end
-
-def image_to_exif
-  EXIFR::JPEG.new(@image_file)
-end
-
-def file_is_valid?
-  File.exist?(@image_file)
-end
-
-def path_to_image_files(args)
-  file_path = args.length > 0 ? args.first : DEFAULT_IMAGE_DIR
-  exit_now!('Arg must be a directory') unless File.directory?(file_path)
-  file_path
-end
-
-pre do |global,command,options,args|
-  # puts("global #{global}")
-  # puts("command #{command}")
-  # puts("options #{options}")
-  # puts("args #{args}")
-
-  timestamp = Time.now.strftime('%Y%j%d-%H:%M')
-
-  @image_files = Dir.glob("#{path_to_image_files(args)}/**/*.jpg")
-  @csv_filename = "cat_coordinates_csv_#{timestamp}.csv"
-end
-
-post do |global,command,options,args|
-  puts "Finished generating #{@csv_filename}"
-end
-
-on_error do |exception|
-  puts("ERROR: #{exception}")
-end
-
-exit run(ARGV)

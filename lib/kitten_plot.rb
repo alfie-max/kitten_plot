@@ -1,4 +1,7 @@
-require 'kitten_plot/version.rb'
+# frozen_string_literal: true
 
-# Add requires for other files you add to your project here, so
-# you just need to require this one file in your bin file
+module KittenPlot
+  module CLI
+    require_relative 'kitten_plot/get_coordinates'
+  end
+end

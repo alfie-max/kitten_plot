@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 gemspec
 
+ruby '2.5.1'
+
 gem 'exifr', '~> 1.3.0'
 gem 'pry'
 gem 'test-unit'
