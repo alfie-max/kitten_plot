@@ -1,11 +1,11 @@
 # Ensure we require the local version and not one we might have installed already
 require File.join([File.dirname(__FILE__),'lib','kitten_plot','version.rb'])
-spec = Gem::Specification.new do |s| 
+spec = Gem::Specification.new do |s|
   s.name = 'kitten_plot'
   s.version = KittenPlot::VERSION
-  s.author = 'Your Name Here'
-  s.email = 'your@email.address.com'
-  s.homepage = 'http://your.website.com'
+  s.author = 'Jillian Evin'
+  s.email = 'jilucev7@gmail.com'
+  s.homepage = 'https://ca.linkedin.com/in/jillian-evin-6a741194'
   s.platform = Gem::Platform::RUBY
   s.summary = 'A description of your project'
   s.files = `git ls-files`.split("

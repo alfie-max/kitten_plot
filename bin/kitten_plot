@@ -33,8 +33,6 @@ desc 'Get the coordinates of a kitten you want'
 arg_name 'Provide the path to your image directory'
 
 #  -m, [--template=TEMPLATE]                              # Path to some application template (can be a filesystem path or URL)
-desc 'Describe some switch here'
-switch [:s,:switch]
 
 desc 'Describe some flag here'
 default_value 'the default'
@@ -78,10 +76,12 @@ end
 
 def latitude
   image_to_exif&.gps&.latitude
+  #mebbe return null
 end
 
 def longitude
   image_to_exif&.gps&.latitude
+  #mebbe return null
 end
 
 def image_to_exif
@@ -93,14 +93,14 @@ def file_is_valid?
 end
 
 pre do |global,command,options,args|
-  puts("global #{global}")
-  puts("command #{command}")
-  puts("options #{options}")
-  puts("args #{args}")
+  # puts("global #{global}")
+  # puts("command #{command}")
+  # puts("options #{options}")
+  # puts("args #{args}")
 
   path_to_image_files = args.length > 0 ? args.first : DEFAULT_IMAGE_DIR
 
-  exit_now!('Must supply a directory') unless File.directory?(path_to_image_files)
+  exit_now!('Arg must be a directory') unless File.directory?(path_to_image_files)
 
   timestamp = Time.now.strftime('%Y%j%d-%H:%M')
 
