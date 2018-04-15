@@ -1,10 +1,8 @@
-require 'minitest/autorun'
-require 'minitest/unit'
-require 'mocha/minitest'
+require 'test/unit'
 
 # Add test libraries you want to use here, e.g. mocha
 
-class Minitest::Test
+class Test::Unit::TestCase
 
   # Add global extensions to the test case class here
 

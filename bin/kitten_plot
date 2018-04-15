@@ -63,8 +63,7 @@ def generate_csv_for_images
 
     @image_files.each do |image_file|
       @image_file = image_file
-      test = file_is_valid?
-      binding.pry
+      exit_now!("#{image_file} is not a valid file") unless file_is_valid?
       csv << gps_coordinates
     end
   end
@@ -75,13 +74,11 @@ def gps_coordinates
 end
 
 def latitude
-  image_to_exif&.gps&.latitude
-  #mebbe return null
+  image_to_exif&.gps&.latitude || nil
 end
 
 def longitude
-  image_to_exif&.gps&.latitude
-  #mebbe return null
+  image_to_exif&.gps&.latitude || nil
 end
 
 def image_to_exif
@@ -89,7 +86,13 @@ def image_to_exif
 end
 
 def file_is_valid?
-  File.exist?(@image_file) && File.file? && File.extname == 'jpg'
+  File.exist?(@image_file)
+end
+
+def path_to_image_files(args)
+  file_path = args.length > 0 ? args.first : DEFAULT_IMAGE_DIR
+  exit_now!('Arg must be a directory') unless File.directory?(file_path)
+  file_path
 end
 
 pre do |global,command,options,args|
@@ -98,14 +101,10 @@ pre do |global,command,options,args|
   # puts("options #{options}")
   # puts("args #{args}")
 
-  path_to_image_files = args.length > 0 ? args.first : DEFAULT_IMAGE_DIR
-
-  exit_now!('Arg must be a directory') unless File.directory?(path_to_image_files)
-
   timestamp = Time.now.strftime('%Y%j%d-%H:%M')
 
-  @image_files = Dir.glob("#{path_to_image_files}/**/*.jpg")
-  @csv_filename = "cat_burglery_targets_#{timestamp}.csv"
+  @image_files = Dir.glob("#{path_to_image_files(args)}/**/*.jpg")
+  @csv_filename = "cat_coordinates_csv_#{timestamp}.csv"
 end
 
 post do |global,command,options,args|
